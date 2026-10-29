@@ -1,0 +1,171 @@
+{
+  "entities": {
+    "Room": {
+      "title": "Room",
+      "description": "Hostel room with occupancy status, bed counts, amenities and maintenance notes",
+      "type": "object",
+      "properties": {
+        "roomNumber": { "type": "string", "description": "Room identifier, e.g. 101" },
+        "floor": { "type": "string", "description": "Floor name or number" },
+        "roomType": { "type": "string", "description": "Single, Double Sharing, Triple Sharing, Dorm" },
+        "totalBeds": { "type": "integer", "description": "Total capacity in beds" },
+        "occupiedBeds": { "type": "integer", "description": "Currently occupied beds" },
+        "status": { "type": "string", "enum": ["vacant", "occupied", "maintenance", "partially_occupied"], "description": "Current room occupancy or maintenance status" },
+        "rentPerBed": { "type": "number", "description": "Monthly rent in INR" },
+        "maintenanceNote": { "type": "string", "description": "Notes on repair or maintenance" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["roomNumber", "floor", "roomType", "totalBeds", "occupiedBeds", "status", "rentPerBed", "createdAt", "updatedAt"]
+    },
+    "Guest": {
+      "title": "Guest",
+      "description": "Hostel resident booking record with contract number, room allocation and rent due date",
+      "type": "object",
+      "properties": {
+        "contractNo": { "type": "string", "description": "Unique lease contract number, e.g. EZS-2026-101A" },
+        "fullName": { "type": "string", "description": "Guest full legal name" },
+        "phone": { "type": "string", "description": "Registered mobile number for SMS alerts" },
+        "email": { "type": "string", "description": "Registered email address for receipts" },
+        "roomNumber": { "type": "string", "description": "Allocated room number" },
+        "bedNumber": { "type": "string", "description": "Bed identifier" },
+        "monthlyRent": { "type": "number", "description": "Agreed monthly rent amount" },
+        "securityDeposit": { "type": "number", "description": "Deposited amount" },
+        "rentDueDay": { "type": "integer", "description": "Day of the month (1-31) when rent is due" },
+        "status": { "type": "string", "enum": ["active", "checked_out", "reserved"], "description": "Guest residency status" },
+        "idProofType": { "type": "string", "description": "Type of ID proof" },
+        "idProofNumber": { "type": "string", "description": "Identification document number" },
+        "emergencyContact": { "type": "string", "description": "Emergency telephone contact" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["contractNo", "fullName", "phone", "email", "roomNumber", "bedNumber", "monthlyRent", "securityDeposit", "rentDueDay", "status", "createdAt", "updatedAt"]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "Rent and deposit transaction receipt with SMS/Email dispatch tracking",
+      "type": "object",
+      "properties": {
+        "receiptNo": { "type": "string", "description": "Official receipt number, e.g. REC-2026-001" },
+        "guestId": { "type": "string", "description": "Foreign key to guest record" },
+        "guestName": { "type": "string", "description": "Guest name for receipt header" },
+        "contractNo": { "type": "string", "description": "Contract number associated with lease" },
+        "amount": { "type": "number", "description": "Transaction amount paid" },
+        "paymentType": { "type": "string", "description": "Rent, Security Deposit, Electricity, Maintenance" },
+        "paymentMode": { "type": "string", "description": "UPI, Cash, Bank Transfer, Card" },
+        "transactionRef": { "type": "string", "description": "Transaction reference or UTR number" },
+        "monthFor": { "type": "string", "description": "Month billing period, e.g. October 2026" },
+        "status": { "type": "string", "description": "Success, Pending, Failed" },
+        "receiptGenerated": { "type": "boolean", "description": "Whether receipt has been created" },
+        "smsAlertSent": { "type": "boolean", "description": "Whether SMS receipt alert was sent" },
+        "emailReceiptSent": { "type": "boolean", "description": "Whether email receipt was sent" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["receiptNo", "guestName", "contractNo", "amount", "paymentType", "paymentMode", "status", "receiptGenerated", "createdAt", "updatedAt"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Hostel staff record with editable permissions, shifts, and contact details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Staff member full name" },
+        "role": { "type": "string", "description": "Manager, Warden, Housekeeping, Accounts" },
+        "phone": { "type": "string", "description": "Staff contact phone" },
+        "email": { "type": "string", "description": "Staff email address" },
+        "shift": { "type": "string", "description": "Assigned work shift" },
+        "salary": { "type": "number", "description": "Monthly compensation" },
+        "status": { "type": "string", "description": "active, on_leave" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "role", "phone", "email", "shift", "status", "createdAt", "updatedAt"]
+    },
+    "Alert": {
+      "title": "Alert",
+      "description": "Automated due reminder or CEO broadcast message sent to guest or staff",
+      "type": "object",
+      "properties": {
+        "alertType": { "type": "string", "description": "DUE_REMINDER, CEO_BROADCAST, PAYMENT_RECEIPT, MAINTENANCE" },
+        "title": { "type": "string", "description": "Subject or title of alert" },
+        "message": { "type": "string", "description": "Full text of SMS or Email body" },
+        "targetRecipient": { "type": "string", "description": "guest, employee, all_staff" },
+        "recipientPhone": { "type": "string", "description": "Mobile number for SMS" },
+        "recipientEmail": { "type": "string", "description": "Email address" },
+        "contractNo": { "type": "string", "description": "Contract number if applicable" },
+        "channel": { "type": "string", "description": "SMS_AND_EMAIL, SMS, EMAIL" },
+        "status": { "type": "string", "description": "Sent, Scheduled, Pending" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["alertType", "title", "message", "channel", "status", "createdAt", "updatedAt"]
+    },
+    "DailyReport": {
+      "title": "DailyReport",
+      "description": "Daily Progress Report (DPR) submitted before till cutoff time with occupancy and collections",
+      "type": "object",
+      "properties": {
+        "reportDate": { "type": "string", "description": "YYYY-MM-DD" },
+        "submittedBy": { "type": "string", "description": "Staff member or CEO who compiled report" },
+        "cutoffMet": { "type": "boolean", "description": "True if submitted before 8 PM cutoff" },
+        "totalRooms": { "type": "integer", "description": "Total room count" },
+        "occupiedRooms": { "type": "integer", "description": "Count of occupied rooms" },
+        "vacantRooms": { "type": "integer", "description": "Count of vacant rooms" },
+        "maintenanceRooms": { "type": "integer", "description": "Rooms under maintenance" },
+        "occupancyRate": { "type": "number", "description": "Percentage occupancy rate" },
+        "todayCollections": { "type": "number", "description": "Revenue collected today in INR" },
+        "pendingDuesCount": { "type": "integer", "description": "Number of tenants with pending dues" },
+        "pendingDuesAmount": { "type": "number", "description": "Total unpaid dues amount" },
+        "remarks": { "type": "string", "description": "Executive remarks or operational notes" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["reportDate", "submittedBy", "cutoffMet", "totalRooms", "occupiedRooms", "vacantRooms", "maintenanceRooms", "occupancyRate", "todayCollections", "createdAt", "updatedAt"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Hostel operational expense for utilities, maintenance, or staff salaries",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Expense item description" },
+        "category": { "type": "string", "description": "Utilities, Maintenance, Salaries, Groceries, Misc" },
+        "amount": { "type": "number", "description": "Expense cost in INR" },
+        "paidTo": { "type": "string", "description": "Vendor or payee name" },
+        "paymentMode": { "type": "string", "description": "UPI, Cash, Bank Transfer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "amount", "paidTo", "paymentMode", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/rooms/{roomId}": {
+      "schema": { "$ref": "#/entities/Room" },
+      "description": "Hostel rooms and real-time occupancy status"
+    },
+    "/users/{userId}/guests/{guestId}": {
+      "schema": { "$ref": "#/entities/Guest" },
+      "description": "Hostel guests, bookings, and rent due contracts"
+    },
+    "/users/{userId}/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "Payment transactions, receipts and dispatch tracking"
+    },
+    "/users/{userId}/employees/{employeeId}": {
+      "schema": { "$ref": "#/entities/Employee" },
+      "description": "Employee profiles, editable controls, and shifts"
+    },
+    "/users/{userId}/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/Alert" },
+      "description": "Due reminder alerts and CEO-to-employee broadcasts"
+    },
+    "/users/{userId}/reports/{reportId}": {
+      "schema": { "$ref": "#/entities/DailyReport" },
+      "description": "Daily Progress Reports (DPR) tracked against cutoff time"
+    },
+    "/users/{userId}/expenses/{expenseId}": {
+      "schema": { "$ref": "#/entities/Expense" },
+      "description": "Hostel operational expenses"
+    }
+  }
+}

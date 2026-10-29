@@ -1,0 +1,215 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidRoom(data) {
+      return data.roomNumber is string && data.roomNumber.size() > 0 && data.roomNumber.size() <= 20 &&
+             data.floor is string && data.floor.size() > 0 && data.floor.size() <= 30 &&
+             data.roomType is string && data.roomType.size() > 0 && data.roomType.size() <= 50 &&
+             data.totalBeds is int && data.totalBeds > 0 && data.totalBeds <= 50 &&
+             data.occupiedBeds is int && data.occupiedBeds >= 0 && data.occupiedBeds <= data.totalBeds &&
+             data.status in ['vacant', 'occupied', 'maintenance', 'partially_occupied'] &&
+             data.rentPerBed is number && data.rentPerBed >= 0 &&
+             (!('maintenanceNote' in data) || data.maintenanceNote is string && data.maintenanceNote.size() <= 500);
+    }
+
+    function isValidGuest(data) {
+      return data.contractNo is string && data.contractNo.size() > 0 && data.contractNo.size() <= 50 &&
+             data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 100 &&
+             data.phone is string && data.phone.size() >= 7 && data.phone.size() <= 20 &&
+             data.email is string && data.email.size() >= 5 && data.email.size() <= 100 &&
+             data.roomNumber is string && data.roomNumber.size() > 0 && data.roomNumber.size() <= 20 &&
+             data.bedNumber is string && data.bedNumber.size() > 0 && data.bedNumber.size() <= 20 &&
+             data.monthlyRent is number && data.monthlyRent >= 0 &&
+             data.securityDeposit is number && data.securityDeposit >= 0 &&
+             data.rentDueDay is int && data.rentDueDay >= 1 && data.rentDueDay <= 31 &&
+             data.status in ['active', 'checked_out', 'reserved'] &&
+             (!('idProofType' in data) || data.idProofType is string && data.idProofType.size() <= 50) &&
+             (!('idProofNumber' in data) || data.idProofNumber is string && data.idProofNumber.size() <= 50) &&
+             (!('emergencyContact' in data) || data.emergencyContact is string && data.emergencyContact.size() <= 20);
+    }
+
+    function isValidPayment(data) {
+      return data.receiptNo is string && data.receiptNo.size() > 0 && data.receiptNo.size() <= 50 &&
+             data.guestName is string && data.guestName.size() > 0 && data.guestName.size() <= 100 &&
+             data.contractNo is string && data.contractNo.size() > 0 && data.contractNo.size() <= 50 &&
+             data.amount is number && data.amount >= 0 &&
+             data.paymentType is string && data.paymentType.size() > 0 && data.paymentType.size() <= 50 &&
+             data.paymentMode is string && data.paymentMode.size() > 0 && data.paymentMode.size() <= 50 &&
+             data.status is string && data.status.size() > 0 && data.status.size() <= 30 &&
+             data.receiptGenerated is bool &&
+             (!('guestId' in data) || data.guestId is string && data.guestId.size() <= 128) &&
+             (!('transactionRef' in data) || data.transactionRef is string && data.transactionRef.size() <= 100) &&
+             (!('monthFor' in data) || data.monthFor is string && data.monthFor.size() <= 50) &&
+             (!('smsAlertSent' in data) || data.smsAlertSent is bool) &&
+             (!('emailReceiptSent' in data) || data.emailReceiptSent is bool);
+    }
+
+    function isValidEmployee(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.role is string && data.role.size() > 0 && data.role.size() <= 50 &&
+             data.phone is string && data.phone.size() >= 7 && data.phone.size() <= 20 &&
+             data.email is string && data.email.size() >= 5 && data.email.size() <= 100 &&
+             data.shift is string && data.shift.size() > 0 && data.shift.size() <= 50 &&
+             data.status is string && data.status.size() > 0 && data.status.size() <= 30 &&
+             (!('salary' in data) || data.salary is number && data.salary >= 0);
+    }
+
+    function isValidAlert(data) {
+      return data.alertType is string && data.alertType.size() > 0 && data.alertType.size() <= 50 &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+             data.message is string && data.message.size() > 0 && data.message.size() <= 1000 &&
+             data.channel is string && data.channel.size() > 0 && data.channel.size() <= 50 &&
+             data.status is string && data.status.size() > 0 && data.status.size() <= 30 &&
+             (!('targetRecipient' in data) || data.targetRecipient is string && data.targetRecipient.size() <= 50) &&
+             (!('recipientPhone' in data) || data.recipientPhone is string && data.recipientPhone.size() <= 30) &&
+             (!('recipientEmail' in data) || data.recipientEmail is string && data.recipientEmail.size() <= 100) &&
+             (!('contractNo' in data) || data.contractNo is string && data.contractNo.size() <= 50);
+    }
+
+    function isValidDailyReport(data) {
+      return data.reportDate is string && data.reportDate.size() >= 8 && data.reportDate.size() <= 20 &&
+             data.submittedBy is string && data.submittedBy.size() > 0 && data.submittedBy.size() <= 100 &&
+             data.cutoffMet is bool &&
+             data.totalRooms is int && data.totalRooms >= 0 &&
+             data.occupiedRooms is int && data.occupiedRooms >= 0 &&
+             data.vacantRooms is int && data.vacantRooms >= 0 &&
+             data.maintenanceRooms is int && data.maintenanceRooms >= 0 &&
+             data.occupancyRate is number && data.occupancyRate >= 0 && data.occupancyRate <= 100 &&
+             data.todayCollections is number && data.todayCollections >= 0 &&
+             (!('pendingDuesCount' in data) || data.pendingDuesCount is int) &&
+             (!('pendingDuesAmount' in data) || data.pendingDuesAmount is number) &&
+             (!('remarks' in data) || data.remarks is string && data.remarks.size() <= 1000);
+    }
+
+    function isValidExpense(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() <= 150 &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 50 &&
+             data.amount is number && data.amount > 0 &&
+             data.paidTo is string && data.paidTo.size() > 0 && data.paidTo.size() <= 100 &&
+             data.paymentMode is string && data.paymentMode.size() > 0 && data.paymentMode.size() <= 50;
+    }
+
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create, update: if isOwner(userId);
+      allow delete: if false;
+
+      match /rooms/{roomId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(roomId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidRoom(incoming());
+        allow update: if isOwner(userId) && isValidId(roomId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidRoom(incoming());
+        allow delete: if isOwner(userId) && isValidId(roomId);
+      }
+
+      match /guests/{guestId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(guestId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidGuest(incoming());
+        allow update: if isOwner(userId) && isValidId(guestId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidGuest(incoming());
+        allow delete: if isOwner(userId) && isValidId(guestId);
+      }
+
+      match /payments/{paymentId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(paymentId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidPayment(incoming());
+        allow update: if isOwner(userId) && isValidId(paymentId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidPayment(incoming());
+        allow delete: if isOwner(userId) && isValidId(paymentId);
+      }
+
+      match /employees/{employeeId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(employeeId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidEmployee(incoming());
+        allow update: if isOwner(userId) && isValidId(employeeId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidEmployee(incoming());
+        allow delete: if isOwner(userId) && isValidId(employeeId);
+      }
+
+      match /alerts/{alertId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(alertId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidAlert(incoming());
+        allow update: if isOwner(userId) && isValidId(alertId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidAlert(incoming());
+        allow delete: if isOwner(userId) && isValidId(alertId);
+      }
+
+      match /reports/{reportId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(reportId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidDailyReport(incoming());
+        allow update: if isOwner(userId) && isValidId(reportId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidDailyReport(incoming());
+        allow delete: if isOwner(userId) && isValidId(reportId);
+      }
+
+      match /expenses/{expenseId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(expenseId) &&
+                         incoming().createdAt is timestamp && incoming().createdAt <= request.time &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidExpense(incoming());
+        allow update: if isOwner(userId) && isValidId(expenseId) &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().updatedAt is timestamp && incoming().updatedAt <= request.time &&
+                         isValidExpense(incoming());
+        allow delete: if isOwner(userId) && isValidId(expenseId);
+      }
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "EzyStay Living",
+  "description": "Rental hostel business management CRM with automated bookings, employee controls, billing, receipts, dues alerts, and daily progress reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

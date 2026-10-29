@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">EzyStay Living</string>
+    <string name="developer_name">Mr. Kavi Raj Singh</string>
+    <string name="contact_email">ezystayliving@gmail.com</string>
+    <string name="contact_website">https://www.ezystayliving.com</string>
+    <string name="contact_phone">9873677108</string>
+    <string name="registered_office">D-256 CR road, Laxmi Nagar, Delhi 110092, India</string>
+    <string name="company_tagline">Smart Rental Hostel &amp; Coliving Operations CRM</string>
+</resources>
